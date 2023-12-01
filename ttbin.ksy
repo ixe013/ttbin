@@ -3,9 +3,11 @@ meta:
   file-extension: ttbin
   endian: le
 types:
-  version:
+  record_length:
     seq:
-      - id: number
+      - id: tag
+        type: u1
+      - id: lenght
         type: u2
   file_header:
     seq:
@@ -26,15 +28,24 @@ types:
         doc: Local time offset in seconds from UTC
       - id: reserved_0
         type: u1
-      - id: number_of_objects
+      - id: length_count
         type: u1
+      - id: zzzzz
+        type: record_length
+        repeat: expr
+        repeat-expr: length_count
 seq:
   - id: file_header_tag
     contents:
       - 0x20
-  - id: version
-    type: version
+    doc: The first tag is 0x20, so we read it as a magic number
+  - id: firmware_version
+    type: u2
+  - id: firmware_v9
+    size: 3
+    if: firmware_version == 9
   - id: firmware_v10
     size: 6
+    if: firmware_version == 10
   - id: header
     type: file_header
