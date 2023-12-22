@@ -1,0 +1,409 @@
+doc-ref: https://blog.studioblueplanet.net/wp-content/files/tomtomwatch/TomTomWatchInterface.pdf
+meta:
+  id: tbin
+  file-extension: ttbin
+  endian: le
+enums:
+  status_enum:
+    0: ready
+    1: active
+    2: paused
+    3: stopped
+types:
+  record_length:
+    seq:
+      - id: tag
+        type: u1
+      - id: length
+        type: u2
+        doc: The length in bytes of this record, not used in this Kaitai spec
+  file_header:
+    seq:
+      - id: product_id
+        type: u2
+      - id: start_time
+        type: u4
+        doc: Local time
+      - id: software_version
+        size: 16
+      - id: gps_firmware_version
+        size: 80
+      - id: watch_time
+        type: u4
+        doc: Local time
+      - id: local_time_offset
+        type: u4
+        doc: Local time offset in seconds from UTC
+      - id: reserved_0
+        type: u1
+      - id: length_count
+        type: u1
+      - id: table_of_lengths
+        type: record_length
+        repeat: expr
+        repeat-expr: length_count
+  record:
+    enums:
+      record_type:
+        0x21: status
+        0x22: gps
+        0x23: unknown_23_24_lenght
+        0x25: heart_rate
+        0x27: summary
+        0x2A: pool_size
+        0x2B: wheel_size
+        0x2D: training_setup
+        0x2F: lap
+        0x30: unknown_30_03_len
+        0x31: cycling_cadence
+        0x32: treadmill
+        0x34: swim
+        0x35: goal_progress
+        0x37: unknown_37_02_len
+        0x39: interval_setup
+        0x3A: interval_start
+        0x3B: interval_finish
+        0x3C: race_setup
+        0x3D: race_result
+        0x3E: altitude_update
+        0x3F: heart_rate_recovery
+        0x40: indoor_cycling
+        0x41: gym
+        0x42: unknown_42_02_len
+        0x47: unknown_47_12_len
+        0x4A: fitness_point
+        0x4B: unknown_4b_var_len
+        0x48: unknown_48_15_len
+        0x49: unknown_49_05_len
+    seq:
+      - id: record_tag
+        type: u1
+        enum: record_type
+      - id: data
+        type:
+          switch-on: record_tag
+          cases:
+            'record_type::status': status
+            'record_type::gps': gps
+            'record_type::unknown_23_24_lenght': unknown_23_24_lenght
+            'record_type::heart_rate': heart_rate
+            'record_type::summary': summary
+            'record_type::pool_size': pool_size
+            'record_type::wheel_size': wheel_size
+            'record_type::training_setup': training_setup
+            'record_type::lap': lap
+            'record_type::unknown_30_03_len': unknown_30_03_len
+            'record_type::cycling_cadence': cycling_cadence
+            'record_type::treadmill': treadmill
+            'record_type::swim': swim
+            'record_type::goal_progress': goal_progress
+            'record_type::unknown_37_02_len': unknown_37_02_len
+            'record_type::interval_setup': interval_setup
+            'record_type::interval_start': interval_start
+            'record_type::interval_finish': interval_finish
+            'record_type::race_setup': race_setup
+            'record_type::race_result': race_result
+            'record_type::altitude_update': altitude_update
+            'record_type::heart_rate_recovery': heart_rate_recovery
+            'record_type::indoor_cycling': indoor_cycling
+            'record_type::gym': gym
+            'record_type::unknown_42_02_len': unknown_42_02_len
+            'record_type::unknown_47_12_len': unknown_47_12_len
+            'record_type::fitness_point': fitness_point
+            'record_type::unknown_4b_var_len': unknown_4b_var_len
+            'record_type::unknown_48_15_len': unknown_48_15_len
+            'record_type::unknown_49_05_len': unknown_49_05_len
+            _: unknown_eat_all
+  status:
+    seq:
+      - id: record_status
+        type: u1
+        enum: status_enum
+      - id: activity
+        type: u1
+      - id: timestamp
+        type: u4
+  gps:
+    seq:
+      - id: latitude
+        type: u4
+        doc: degrees x 1e7
+      - id: longitude
+        type: u4
+        doc: degrees x 1e7
+      - id: heading
+        type: u2
+        doc: degrees x 100, North is 0, East is 9000
+      - id: gps_speed
+        type: u2
+        doc: In cm/s
+      - id: timestamp
+        type: u4
+        doc: gps time (UTC)
+      - id: calories
+        type: u2
+      - id: instant_speed
+        type: f4
+        doc: In m/s
+      - id: cumulative_distance
+        type: f4
+        doc: In meters
+      - id: cycles
+        type: u1
+        doc: In steps/s for running or crank rmp for cyclying
+  unknown_23_24_lenght:
+    seq:
+      - id: stuff
+        size: 24-1
+  heart_rate:
+    seq:
+      - id: heart_rate
+        type: u1
+        doc: In beats per minutes
+      - id: reserved
+        type: u1
+      - id: timestamp
+        type: u4
+        doc: Local time
+  unknown_30_03_len:
+    seq:
+      - id: stuff
+        size: 3-1
+  cycling_cadence:
+    seq:
+      - id: wheel_revolutions
+        type: u4
+      - id: wheel_revolutions_time
+        type: u2
+      - id: crank_revolutions
+        type: u2
+      - id: crank_revolutions_time
+        type: u2
+  treadmill:
+    seq:
+      - id: timestamp
+        type: u4
+        doc: Local time
+      - id: distance
+        type: f4
+        doc: In meters
+      - id: calories
+        type: u2
+      - id: steps
+        type: u4
+      - id: step_length
+        type: u2
+        doc: In centimeters, not implemented yet
+  swim:
+    seq:
+      - id: timestamp
+        type: u4
+        doc: Local time
+      - id: total_distance
+        type: f4
+        doc: In meters
+      - id: frequency
+        type: u1
+      - id: stroke_type
+        type: u1
+      - id: strokes
+        type: u4
+        doc: Since the last report
+      - id: completed_laps
+        type: u4
+      - id: total_calories
+        type: u2
+  goal_progress:
+    seq:
+      - id: percent
+        type: u1
+      - id: value
+        type: u4
+  unknown_37_02_len:
+    seq:
+      - id: stuff
+        size: 2-1
+  interval_setup:
+    seq:
+      - id: warm_type
+        type: u1
+        doc: Its 0 = distance, 1 = time
+      - id: warm
+        type: u4
+        doc: Its metres, seconds
+      - id: work_type
+        type: u1
+        doc: Its 0 = distance, 1 = time
+      - id: work
+        type: u4
+        doc: Its metres, seconds
+      - id: rest_type
+        type: u1
+        doc: Its 0 = distance, 1 = time
+      - id: rest
+        type: u4
+        doc: Its metres, seconds
+      - id: cool_type
+        type: u1
+        doc: Its 0 = distance, 1 = time
+      - id: cool
+        type: u4
+        doc: Its metres, seconds
+      - id: sets
+        type: u1
+  interval_start:
+    seq:
+      - id: type
+        type: u1
+  interval_finish:
+    seq:
+      - id: type
+        type: u2
+      - id: total_time
+        type: u4
+      - id: total_distance
+        type: f4
+      - id: total_calories
+        type: u2
+  race_setup:
+    seq:
+      - id: race_id
+        type: u1
+      - id: float
+        type: f4
+      - id: duration
+        type: u4
+      - id: name
+        type: str
+        size: 16
+        encoding: UTF-8
+  race_result:
+    seq:
+      - id: duration
+        type: u4
+        doc: In seconds
+      - id: distance
+        type: f4
+        doc: In meters
+      - id: calories
+        type: u2
+  altitude_update:
+    seq:
+      - id: rel_altitude
+        type: u2
+        doc: Altitude change from workout start
+      - id: total_climb
+        type: f4
+        doc: In meters, descents are ignored
+      - id: qualifier
+        type: u1
+        doc: Not defined yet
+  heart_rate_recovery:
+    seq:
+      - id: status
+        type: u4
+        doc: It's Good(3), excellent(4)
+      - id: heart_rate
+        type: u4
+        doc: Beats per minutes
+  indoor_cycling:
+    seq:
+      - id: stuff
+        size: 12-1
+  gym:
+    seq:
+      - id: timestamp
+        type: u4
+      - id: total_calories
+        type: u2
+      - id: total_cycles
+        type: u4
+  summary:
+    seq:
+      - id: activity
+        type: u1
+      - id: distance
+        type: f4
+      - id: duration
+        type: u4
+        doc: In seconds, after adding 1
+      - id: calories
+        type: u2
+  pool_size:
+    seq:
+      - id: pool_size
+        type: u4
+        doc: Pool size in centimeters
+  wheel_size:
+    seq:
+      - id: wheel_size
+        type: u4
+        doc: Wheel size in millimeters
+  training_setup:
+    seq:
+      - id: type
+        type: u1
+      - id: min
+        type: f4
+      - id: max
+        type: f4
+  lap:
+    seq:
+      - id: total_time
+        type: u4
+      - id: total_distance
+        type: f4
+      - id: total_calories
+        type: u2
+  unknown_42_02_len:
+    seq:
+      - id: stuff
+        size: 2-1
+  unknown_47_12_len:
+    seq:
+      - id: stuff
+        size: 12-1
+  fitness_point:
+    seq:  
+      - id: timestamp
+        type: u4
+      - id: points1
+        type: u2
+      - id: points2
+        type: u2
+  unknown_4b_var_len:
+    seq:
+      - id: size
+        type: u2
+      - id: filler
+        size: size
+  unknown_48_15_len:
+    seq:
+      - id: stuff
+        size: 15-1
+  unknown_49_05_len:
+    seq:
+      - id: stuff
+        size: 5-1
+  unknown_eat_all:
+    seq:
+      - id: stuff
+        size-eos: true
+seq:
+  - id: file_header_tag
+    contents:
+      - 0x20
+    doc: The first tag is 0x20, so we read it as a magic number
+  - id: firmware_version
+    type: u2
+  - id: firmware_v9
+    size: 3
+    if: firmware_version == 9
+  - id: firmware_v10
+    size: 6
+    if: firmware_version == 10
+  - id: header
+    type: file_header
+  - id: records
+    type: record
+    repeat: eos
