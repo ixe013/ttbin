@@ -47,19 +47,19 @@ types:
       record_type:
         0x21: status
         0x22: gps
-        0x23: unknown_23_24_lenght
+        0x23: gps_extended
         0x25: heart_rate
         0x27: summary
         0x2A: pool_size
         0x2B: wheel_size
         0x2D: training_setup
         0x2F: lap
-        0x30: unknown_30_03_len
+        0x30: activity_selection
         0x31: cycling_cadence
         0x32: treadmill
         0x34: swim
         0x35: goal_progress
-        0x37: unknown_37_02_len
+        0x37: activity_started
         0x39: interval_setup
         0x3A: interval_start
         0x3B: interval_finish
@@ -69,12 +69,12 @@ types:
         0x3F: heart_rate_recovery
         0x40: indoor_cycling
         0x41: gym
-        0x42: unknown_42_02_len
-        0x47: unknown_47_12_len
+        0x42: movement
+        0x47: elevation
         0x4A: fitness_point
         0x4B: unknown_4b_var_len
         0x48: unknown_48_15_len
-        0x49: unknown_49_05_len
+        0x49: battery_record
     seq:
       - id: record_tag
         type: u1
@@ -85,19 +85,19 @@ types:
           cases:
             'record_type::status': status
             'record_type::gps': gps
-            'record_type::unknown_23_24_lenght': unknown_23_24_lenght
+            'record_type::gps_extended': gps_extended
             'record_type::heart_rate': heart_rate
             'record_type::summary': summary
             'record_type::pool_size': pool_size
             'record_type::wheel_size': wheel_size
             'record_type::training_setup': training_setup
             'record_type::lap': lap
-            'record_type::unknown_30_03_len': unknown_30_03_len
+            'record_type::activity_selection': activity_selection
             'record_type::cycling_cadence': cycling_cadence
             'record_type::treadmill': treadmill
             'record_type::swim': swim
             'record_type::goal_progress': goal_progress
-            'record_type::unknown_37_02_len': unknown_37_02_len
+            'record_type::activity_started': activity_started
             'record_type::interval_setup': interval_setup
             'record_type::interval_start': interval_start
             'record_type::interval_finish': interval_finish
@@ -107,13 +107,12 @@ types:
             'record_type::heart_rate_recovery': heart_rate_recovery
             'record_type::indoor_cycling': indoor_cycling
             'record_type::gym': gym
-            'record_type::unknown_42_02_len': unknown_42_02_len
-            'record_type::unknown_47_12_len': unknown_47_12_len
+            'record_type::movement': movement
+            'record_type::elevation': elevation
             'record_type::fitness_point': fitness_point
             'record_type::unknown_4b_var_len': unknown_4b_var_len
             'record_type::unknown_48_15_len': unknown_48_15_len
-            'record_type::unknown_49_05_len': unknown_49_05_len
-            _: unknown_eat_all
+            'record_type::battery_record': battery_record
   status:
     seq:
       - id: record_status
@@ -151,10 +150,27 @@ types:
       - id: cycles
         type: u1
         doc: In steps/s for running or crank rmp for cyclying
-  unknown_23_24_lenght:
+  gps_extended:
     seq:
-      - id: stuff
-        size: 24-1
+      - id: vertical_position_error
+        type: u2
+      - id: horizontal_position_error
+        type: u2
+      - id: horizontal_dilution_of_precision
+        type: u1
+      - id: unknown1
+        size: 4
+      - id: unknown2
+        size: 4
+      - id: unknown3
+        size: 4
+      - id: unknown4
+        type: u1
+      - id: unknown5
+        type: u1
+      - id: unknown6
+        size: 4
+        if: _root.firmware_version == 10
   heart_rate:
     seq:
       - id: heart_rate
@@ -165,10 +181,12 @@ types:
       - id: timestamp
         type: u4
         doc: Local time
-  unknown_30_03_len:
+  activity_selection:
     seq:
-      - id: stuff
-        size: 3-1
+      - id: some_status
+        type: u1
+      - id: unknown
+        type: u1
   cycling_cadence:
     seq:
       - id: wheel_revolutions
@@ -219,10 +237,10 @@ types:
         type: u1
       - id: value
         type: u4
-  unknown_37_02_len:
+  activity_started:
     seq:
-      - id: stuff
-        size: 2-1
+      - id: counter_or_status
+        type: u1
   interval_setup:
     seq:
       - id: warm_type
@@ -355,40 +373,56 @@ types:
         type: f4
       - id: total_calories
         type: u2
-  unknown_42_02_len:
+  movement:
     seq:
-      - id: stuff
-        size: 2-1
-  unknown_47_12_len:
+      - id: status
+        type: u1
+  elevation:
     seq:
-      - id: stuff
-        size: 12-1
+      - id: status
+        type: u1
+      - id: altitude
+        type: u2
+      - id: relative_altitude
+        type: u2
+      - id: ascend
+        type: u2
+      - id: descend
+        type: u2
+      - id: unknown
+        type: u2
   fitness_point:
-    seq:  
+    seq:
       - id: timestamp
         type: u4
       - id: points1
         type: u2
       - id: points2
         type: u2
+  unknown_48_15_len:
+    seq:
+      - id: stuff
+        size: 15-1
+  battery_record:
+    seq:
+      - id: level
+        type: u1
+        doc: Level in percent (whole values)
+      - id: unknown1
+        type: u1
+        doc: Always 127
+      - id: unknown2
+        type: u1
+        doc: Often 4, 5 or 6
+      - id: unknown3
+        type: u1
+        doc: Often 0
   unknown_4b_var_len:
     seq:
       - id: size
         type: u2
       - id: filler
         size: size
-  unknown_48_15_len:
-    seq:
-      - id: stuff
-        size: 15-1
-  unknown_49_05_len:
-    seq:
-      - id: stuff
-        size: 5-1
-  unknown_eat_all:
-    seq:
-      - id: stuff
-        size-eos: true
 seq:
   - id: file_header_tag
     contents:
